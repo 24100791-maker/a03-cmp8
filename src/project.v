@@ -1,27 +1,24 @@
-/*
- * Copyright (c) 2024 Your Name
- * SPDX-License-Identifier: Apache-2.0
- */
-
 `default_nettype none
 
-module tt_um_example (
-    input  wire [7:0] ui_in,    // Dedicated inputs
-    output wire [7:0] uo_out,   // Dedicated outputs
-    input  wire [7:0] uio_in,   // IOs: Input path
-    output wire [7:0] uio_out,  // IOs: Output path
-    output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-    input  wire       ena,      // always 1 when the design is powered, so you can ignore it
-    input  wire       clk,      // clock
-    input  wire       rst_n     // reset_n - low to reset
+module tt_um_cmp8_24100791 (
+    input  wire [7:0] ui_in,    // A
+    output wire [7:0] uo_out,   // [0]=LT [1]=EQ [2]=GT [3]=MODE
+    input  wire [7:0] uio_in,   // B
+    output wire [7:0] uio_out,
+    output wire [7:0] uio_oe,
+    input  wire       ena,
+    input  wire       clk,
+    input  wire       rst_n
 );
+    // 1 = co dau, 0 = khong dau (chan chon che do: cho giang vien xac nhan)
+    wire sgn = rst_n;
+    wire gt, eq, lt;
 
-  // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
-  assign uio_out = 0;
-  assign uio_oe  = 0;
+    cmp8 u_cmp (.a(ui_in), .b(uio_in), .sgn(sgn), .gt(gt), .eq(eq), .lt(lt));
 
-  // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
+    assign uo_out  = {4'b0000, sgn, gt, eq, lt};
+    assign uio_out = 8'b0;
+    assign uio_oe  = 8'b0;      // uio toan bo la input
 
+    wire _unused = &{ena, clk, 1'b0};
 endmodule
